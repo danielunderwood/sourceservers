@@ -17,6 +17,23 @@ api = flask.Blueprint('api', __name__)
 cache = werkzeug.contrib.cache.SimpleCache()
 
 
+def try_abort(func, abort_code, abort_message='', *args, **kwargs):
+    """
+    Tries func with kwargs and aborts with abort code and message if an
+    exception is encountered
+
+    @param  func:  Function to try
+    @param  abort_code:  Flask abort code to abort with
+    @param  abort_message: Message to abort with
+    @param  *args:  args to pass to func
+    @param  **kwargs:  kwargs to pass to func
+    """
+    try:
+        return func(*args, **kwargs)
+    except:
+        flask.abort(abort_code, abort_message)
+
+
 def get_server_info(host):
     """
     Gets server info for the specified host
@@ -30,14 +47,16 @@ def get_server_info(host):
     host_split = host.split(':')
     if len(host_split) == 2:
         host = host_split[0]
-        port = host_split[1]
+        port = try_abort(int, 400, 'Port not integer', host_split[1])
+        print(port)
     elif len(host_split) != 1:
         # If the split isn't 1 or 2, multiple colons were given
         flask.abort(400, 'Multiple possible ports found in request')
 
     # Query Server
     server = valve.source.a2s.ServerQuerier((host, port))
-    info_dict = dict(server.get_info())
+    info = try_abort(server.get_info, 404, 'Server not found')
+    info_dict = dict(info)
 
     # Replace fields that aren't JSON serializable
     # TODO Make this more general
