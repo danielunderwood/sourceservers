@@ -2,6 +2,7 @@
 API for performing A2S queries
 """
 
+import json
 import time
 
 import flask
@@ -58,11 +59,6 @@ def get_server_info(host):
     info = try_abort(server.get_info, 404, 'Server not found')
     info_dict = dict(info)
 
-    # Replace fields that aren't JSON serializable
-    # TODO Make this more general
-    info_dict['platform'] = str(info_dict['platform'])
-    info_dict['server_type'] = str(info_dict['server_type'])
-
     return info_dict
 
 
@@ -107,4 +103,10 @@ def server_info(host):
                    than the default of 27015
     """
     info_dict = query_or_cache(host)
+
+    # Replace any fields that are JSON serializable by their string
+    # representations
+    info_str = json.dumps(info_dict, default=str)
+    info_dict = json.loads(info_str)
+
     return flask.jsonify(info_dict)
