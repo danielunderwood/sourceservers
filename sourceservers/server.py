@@ -4,7 +4,7 @@ UWSGI application to run csgoservers
 
 import flask
 
-import api
+from sourceservers import api
 
 # Set up app and register blueprints
 app = flask.Flask(__name__)
