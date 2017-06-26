@@ -39,5 +39,6 @@ setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
+        'deploy': ['uwsgi']
     },
 )
