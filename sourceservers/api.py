@@ -57,7 +57,11 @@ def get_server_info(host):
     # Query Server
     server = valve.source.a2s.ServerQuerier((host, port))
     info = try_abort(server.get_info, 404, 'Server not found')
+    players = server.get_players()
+    players_list = [unicode(player['name']).encode('utf-8').decode('unicode-escape')
+                    for player in players['players'] if player['name']]
     info_dict = dict(info)
+    info_dict.update({'players': players_list})
 
     return info_dict
 
